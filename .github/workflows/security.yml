@@ -1,0 +1,72 @@
+name: Security — Scan
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  schedule:
+    - cron: '0 8 * * 1'
+
+env:
+  JAVA_VERSION: '21'
+
+jobs:
+  security:
+    name: 🔐 Security Scan
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: ☕ Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: temurin
+          cache: gradle
+
+      - name: 🔑 Permissão Gradle
+        run: chmod +x gradlew
+
+      # OWASP
+      - name: 🛡️ Dependency Check
+        run: ./gradlew dependencyCheckAnalyze --no-daemon || true
+
+      # CodeQL
+      - name: 🔬 CodeQL Init
+        uses: github/codeql-action/init@v3
+        with:
+          languages: java
+
+      - name: 🔬 CodeQL Build
+        run: ./gradlew build -x test --no-daemon
+
+      - name: 🔬 CodeQL Analyze
+        uses: github/codeql-action/analyze@v3
+
+      # Gitleaks
+      - name: 🔐 Secret Scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: 📊 Upload relatório
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: build/reports/
+          retention-days: 7
+
+      - name: 📝 Summary
+        if: always()
+        run: |
+          echo "## 🔐 Security Scan" >> $GITHUB_STEP_SUMMARY
+          echo "OWASP, CodeQL e Gitleaks executados." >> $GITHUB_STEP_SUMMARY

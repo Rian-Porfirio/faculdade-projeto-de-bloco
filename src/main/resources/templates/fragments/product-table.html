@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<body>
+<div th:fragment="productTable" id="productTableWrapper">
+    <div th:if="${products == null or products.empty}" class="empty-state text-center py-5" id="emptyState">
+        <div class="empty-icon mb-3">
+            <i class="bi bi-box-seam text-muted" style="font-size: 4rem; opacity: 0.3;"></i>
+        </div>
+        <h5 class="text-muted fw-semibold">Nenhum produto encontrado</h5>
+        <p class="text-muted small mb-4">Tente ajustar os filtros ou adicione um novo produto.</p>
+        <a th:href="@{/products/new}" class="btn btn-accent">
+            <i class="bi bi-plus-lg me-1"></i>Adicionar Produto
+        </a>
+    </div>
+
+    <div th:if="${products != null and !products.empty}" class="table-responsive">
+        <table class="table table-hover product-table align-middle" id="productsTable">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Nome</th>
+                    <th scope="col">Categoria</th>
+                    <th scope="col">Preço</th>
+                    <th scope="col">Estoque</th>
+                    <th scope="col" class="text-center">Status</th>
+                    <th scope="col" class="text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="product : ${products}" th:id="'row-' + ${product.id}" class="product-row">
+                    <td>
+                        <span class="product-id text-muted small" th:text="${product.id}">#1</span>
+                    </td>
+                    <td>
+                        <div class="product-name-cell">
+                            <span class="product-name fw-semibold" th:text="${product.name}">Produto</span>
+                            <small class="text-muted d-block text-truncate"
+                                   style="max-width: 250px;"
+                                   th:if="${product.description != null and !product.description.empty}"
+                                   th:text="${product.description}">Descrição</small>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge badge-category" th:text="${product.category}">Categoria</span>
+                    </td>
+                    <td>
+                        <span class="product-price fw-semibold"
+                              th:text="${'R$ ' + #numbers.formatDecimal(product.price, 1, 'POINT', 2, 'COMMA')}">
+                            R$ 0,00
+                        </span>
+                    </td>
+                    <td>
+                        <span th:text="${product.stock}" class="fw-semibold">0</span>
+                        <small class="text-muted">un.</small>
+                    </td>
+                    <td class="text-center">
+                        <span th:if="${product.stock > 10}" class="badge bg-success-subtle text-success">
+                            <i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i>Disponível
+                        </span>
+                        <span th:if="${product.stock > 0 and product.stock <= 10}" class="badge bg-warning-subtle text-warning">
+                            <i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i>Baixo
+                        </span>
+                        <span th:if="${product.stock == 0}" class="badge bg-danger-subtle text-danger">
+                            <i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i>Sem Estoque
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a th:href="@{/products/{id}/edit(id=${product.id})}"
+                               class="btn btn-outline-primary btn-action"
+                               title="Editar"
+                               th:attr="data-product-id=${product.id}">
+                                <i class="bi bi-pencil-fill"></i>
+                            </a>
+                            <button type="button"
+                                    class="btn btn-outline-danger btn-action btn-delete"
+                                    title="Excluir"
+                                    th:attr="data-product-id=${product.id}, data-product-name=${product.name}"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#deleteModal">
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="table-footer d-flex justify-content-between align-items-center px-1 text-muted small">
+            <span>
+                <span th:text="${products.size()}" id="productCount">0</span> produto(s) encontrado(s)
+            </span>
+        </div>
+    </div>
+</div>
+</body>
+</html>

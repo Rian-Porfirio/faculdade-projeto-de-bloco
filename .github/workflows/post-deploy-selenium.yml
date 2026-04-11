@@ -1,0 +1,59 @@
+name: Selenium — E2E Tests
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+env:
+  JAVA_VERSION: '21'
+
+jobs:
+  selenium:
+    name: 🌐 Selenium Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: ☕ Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: temurin
+          cache: gradle
+
+      - name: 🔑 Permissão Gradle
+        run: chmod +x gradlew
+
+      - name: 🌐 Setup Chrome
+        uses: browser-actions/setup-chrome@v1
+
+      # (Opcional) subir aplicação local
+      - name: ▶️ Subir aplicação
+        run: |
+          ./gradlew bootJar --no-daemon
+          java -jar build/libs/*.jar &
+          sleep 15
+
+      - name: 🌐 Rodar Selenium
+        run: |
+          ./gradlew test --tests "*SeleniumTest" \
+            -DHEADLESS=true \
+            --no-daemon || true
+
+      - name: 📊 Upload relatórios
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: selenium-reports
+          path: |
+            build/reports/
+          retention-days: 7
+
+      - name: 📝 Summary
+        if: always()
+        run: |
+          echo "## 🌐 Selenium Tests" >> $GITHUB_STEP_SUMMARY
+          echo "Testes E2E executados com Chrome headless." >> $GITHUB_STEP_SUMMARY

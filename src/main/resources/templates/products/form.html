@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${formTitle + ' | AgrotelliSystem'}">Produto | AgrotelliSystem</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container mt-3">
+    <div th:replace="~{fragments/alerts :: alerts}"></div>
+</div>
+
+<main class="container py-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a th:href="@{/products}" class="text-decoration-none">
+                    <i class="bi bi-grid-3x3-gap me-1"></i>Produtos
+                </a>
+            </li>
+            <li class="breadcrumb-item active" th:text="${formTitle}">Novo Produto</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8">
+
+            <!-- Form Card -->
+            <div class="card form-card">
+                <div class="card-header-custom">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="form-icon-wrapper">
+                            <i th:class="${product.id != null ? 'bi bi-pencil-fill' : 'bi bi-plus-lg'}"></i>
+                        </div>
+                        <div>
+                            <h2 class="form-card-title mb-0" th:text="${formTitle}">Novo Produto</h2>
+                            <small class="text-muted" th:if="${product.id != null}"
+                                   th:text="'ID: #' + ${product.id}">ID: #1</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <form th:action="${formAction}"
+                          th:object="${product}"
+                          method="post"
+                          id="productForm"
+                          novalidate>
+
+                        <!-- Global error message -->
+                        <div th:if="${errorMessage}"
+                             class="alert alert-danger d-flex align-items-center gap-2 mb-4"
+                             role="alert" id="formErrorAlert">
+                            <i class="bi bi-exclamation-triangle-fill flex-shrink-0"></i>
+                            <span th:text="${errorMessage}">Erro</span>
+                        </div>
+
+                        <div class="row g-4">
+
+                            <!-- Name -->
+                            <div class="col-12">
+                                <label for="nameInput" class="form-label required-label">Nome do Produto</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="nameInput"
+                                       th:field="*{name}"
+                                       th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'"
+                                       placeholder="Ex: Notebook Dell XPS 15"
+                                       maxlength="100"
+                                       autocomplete="off"/>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}"
+                                     th:errors="*{name}" id="nameError">Erro</div>
+                                <div class="form-text">Entre 2 e 100 caracteres.</div>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="col-12">
+                                <label for="descriptionInput" class="form-label">Descrição</label>
+                                <textarea class="form-control"
+                                          id="descriptionInput"
+                                          th:field="*{description}"
+                                          th:classappend="${#fields.hasErrors('description')} ? 'is-invalid'"
+                                          rows="3"
+                                          placeholder="Descreva o produto em detalhes..."
+                                          maxlength="500"></textarea>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('description')}"
+                                     th:errors="*{description}" id="descriptionError">Erro</div>
+                                <div class="form-text d-flex justify-content-between">
+                                    <span>Opcional. Máximo de 500 caracteres.</span>
+                                    <span id="descCharCount" class="text-muted">0/500</span>
+                                </div>
+                            </div>
+
+                            <!-- Price and Stock -->
+                            <div class="col-12 col-md-6">
+                                <label for="priceInput" class="form-label required-label">Preço (R$)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">R$</span>
+                                    <input type="number"
+                                           class="form-control"
+                                           id="priceInput"
+                                           th:field="*{price}"
+                                           th:classappend="${#fields.hasErrors('price')} ? 'is-invalid'"
+                                           placeholder="0,00"
+                                           step="0.01"
+                                           min="0.01"
+                                           max="999999.99"/>
+                                </div>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('price')}"
+                                     th:errors="*{price}" id="priceError">Erro</div>
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <label for="stockInput" class="form-label required-label">Estoque (unidades)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-boxes"></i></span>
+                                    <input type="number"
+                                           class="form-control"
+                                           id="stockInput"
+                                           th:field="*{stock}"
+                                           th:classappend="${#fields.hasErrors('stock')} ? 'is-invalid'"
+                                           placeholder="0"
+                                           min="0"
+                                           max="100000"/>
+                                </div>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('stock')}"
+                                     th:errors="*{stock}" id="stockError">Erro</div>
+                            </div>
+
+                            <!-- Category -->
+                            <div class="col-12">
+                                <label for="categoryInput" class="form-label required-label">Categoria</label>
+                                <div class="input-group">
+                                    <input type="text"
+                                           class="form-control"
+                                           id="categoryInput"
+                                           th:field="*{category}"
+                                           th:classappend="${#fields.hasErrors('category')} ? 'is-invalid'"
+                                           placeholder="Ex: Eletrônicos"
+                                           list="categoryList"
+                                           maxlength="50"
+                                           autocomplete="off"/>
+                                    <datalist id="categoryList">
+                                        <option th:each="cat : ${categories}" th:value="${cat}"/>
+                                    </datalist>
+                                    <span class="input-group-text"><i class="bi bi-tag"></i></span>
+                                </div>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('category')}"
+                                     th:errors="*{category}" id="categoryError">Erro</div>
+                                <div class="form-text">Escolha uma categoria existente ou crie uma nova.</div>
+                            </div>
+
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-flex justify-content-end gap-3 mt-5 pt-3 border-top">
+                            <a th:href="@{/products}" class="btn btn-outline-secondary px-4" id="btnCancel">
+                                <i class="bi bi-x-lg me-1"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-accent px-5" id="btnSubmit">
+                                <i th:class="${product.id != null ? 'bi bi-check-lg me-1' : 'bi bi-plus-lg me-1'}"></i>
+                                <span th:text="${product.id != null ? 'Salvar Alterações' : 'Criar Produto'}">Salvar</span>
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/htmx.org@1.9.12"></script>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>
