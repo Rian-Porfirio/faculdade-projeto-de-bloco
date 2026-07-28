@@ -40,7 +40,7 @@ class AuditoriaEnversTest {
 
     @Test
     void deveRegistrarHistoricoDeAlteracoesDoLivro() {
-        String isbn = "isbn-hist-" + System.nanoTime();
+        String isbn = "ISBN-" + (System.nanoTime() % 1_000_000);
 
         Long livroId = tx.execute(status -> {
             Categoria categoria = categoriaRepository.save(new Categoria("Categoria-" + System.nanoTime()));

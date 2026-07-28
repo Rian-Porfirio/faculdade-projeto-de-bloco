@@ -9,14 +9,19 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import org.hibernate.envers.Audited;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.envers.Audited;
 
 @Entity
 @Table(name = "multa")
 @Audited
+@Getter
+@Setter
+@NoArgsConstructor
 public class Multa {
 
     @Id
@@ -36,46 +41,4 @@ public class Multa {
     @Column(name = "data_geracao", nullable = false)
     private LocalDate dataGeracao;
 
-    public Multa() {
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Emprestimo getEmprestimo() {
-        return emprestimo;
-    }
-
-    public void setEmprestimo(Emprestimo emprestimo) {
-        this.emprestimo = emprestimo;
-    }
-
-    public BigDecimal getValor() {
-        return valor;
-    }
-
-    public void setValor(BigDecimal valor) {
-        this.valor = valor;
-    }
-
-    public boolean isPaga() {
-        return paga;
-    }
-
-    public void setPaga(boolean paga) {
-        this.paga = paga;
-    }
-
-    public LocalDate getDataGeracao() {
-        return dataGeracao;
-    }
-
-    public void setDataGeracao(LocalDate dataGeracao) {
-        this.dataGeracao = dataGeracao;
-    }
 }

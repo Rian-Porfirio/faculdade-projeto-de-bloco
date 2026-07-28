@@ -13,13 +13,19 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import org.hibernate.envers.Audited;
-
 import java.time.LocalDate;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.envers.Audited;
 
 @Entity
 @Table(name = "emprestimo")
 @Audited
+@Getter @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Emprestimo {
 
     @Id
@@ -49,71 +55,4 @@ public class Emprestimo {
 
     @OneToOne(mappedBy = "emprestimo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Multa multa;
-
-    public Emprestimo() {
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Livro getLivro() {
-        return livro;
-    }
-
-    public void setLivro(Livro livro) {
-        this.livro = livro;
-    }
-
-    public Membro getMembro() {
-        return membro;
-    }
-
-    public void setMembro(Membro membro) {
-        this.membro = membro;
-    }
-
-    public LocalDate getDataEmprestimo() {
-        return dataEmprestimo;
-    }
-
-    public void setDataEmprestimo(LocalDate dataEmprestimo) {
-        this.dataEmprestimo = dataEmprestimo;
-    }
-
-    public LocalDate getDataDevolucaoPrevista() {
-        return dataDevolucaoPrevista;
-    }
-
-    public void setDataDevolucaoPrevista(LocalDate dataDevolucaoPrevista) {
-        this.dataDevolucaoPrevista = dataDevolucaoPrevista;
-    }
-
-    public LocalDate getDataDevolucaoReal() {
-        return dataDevolucaoReal;
-    }
-
-    public void setDataDevolucaoReal(LocalDate dataDevolucaoReal) {
-        this.dataDevolucaoReal = dataDevolucaoReal;
-    }
-
-    public StatusEmprestimo getStatus() {
-        return status;
-    }
-
-    public void setStatus(StatusEmprestimo status) {
-        this.status = status;
-    }
-
-    public Multa getMulta() {
-        return multa;
-    }
-
-    public void setMulta(Multa multa) {
-        this.multa = multa;
-    }
 }
