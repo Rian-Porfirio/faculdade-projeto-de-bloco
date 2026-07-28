@@ -117,6 +117,21 @@ duplicidade de regras.
 - **`GenerationType.IDENTITY`** para os identificadores, compatível com o auto-incremento
   do H2 e de bancos relacionais comuns.
 
+### Integridade e performance
+
+A **integridade** dos dados é assegurada em duas frentes: no banco, por chaves estrangeiras
+(`@JoinColumn`) e restrições de unicidade (`isbn`, `email`, `categoria.nome`, `emprestimo_id`
+na multa); e na aplicação, pelas validações da camada de serviço (verificação de ISBN e
+e-mail já existentes, controle de estoque antes de emprestar, limite de empréstimos ativos
+por membro). Toda operação que grava passa por métodos anotados com `@Transactional`, o que
+garante atomicidade — se uma regra falhar, nada é persistido.
+
+Do lado da **performance**: os relacionamentos usam `FetchType.LAZY` para evitar carregar
+dados desnecessários e o problema de N+1 em cascata; as consultas de leitura usam
+`@Transactional(readOnly = true)`, permitindo que o provedor otimize a sessão; e o acesso
+por atributos únicos (ISBN, e-mail) é naturalmente indexado pelas restrições `unique`.
+Índices adicionais nas colunas mais consultadas estão listados em melhorias futuras.
+
 ---
 
 ## 3. Repositórios
