@@ -1,0 +1,5 @@
+package br.edu.votacao.domain;
+
+public enum Cargo {
+    PRESIDENTE, GOVERNADOR, SENADOR, DEPUTADO_FEDERAL, DEPUTADO_ESTADUAL, PREFEITO, VEREADOR
+}
