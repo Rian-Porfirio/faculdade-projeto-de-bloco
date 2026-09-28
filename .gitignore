@@ -1,0 +1,15 @@
+# Java / Maven
+backend/target/
+*.class
+# Node
+frontend/node_modules/
+frontend/dist/
+*.tsbuildinfo
+# IDEs
+.idea/
+.vscode/
+*.iml
+# Segredos locais (nunca versionar)
+.env
+.env.*
+!.env.example
