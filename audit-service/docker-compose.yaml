@@ -1,0 +1,15 @@
+services:
+  postgres-db:
+    image: postgres:16.4-alpine
+    container_name: auditoria-db
+    ports:
+      - "5431:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: auditoria
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
