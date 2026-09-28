@@ -5,13 +5,13 @@ sempre em estado executável:
 
 ```text
 main
-├── branch-1  → REST + Spring Boot + PostgreSQL + React + testes
-├── branch-2  → Branch 1 + RabbitMQ / arquitetura orientada a eventos   (esta versão)
-└── branch-3  → Branch 2 + Docker, Kubernetes, observabilidade e CI/CD
+├── branch-TP3  → REST + Spring Boot + PostgreSQL + React + testes
+├── branch-TP4  → Branch TP3 + RabbitMQ / arquitetura orientada a eventos   (esta versão)
+└── branch-TP5  → Branch TP4 + Docker, Kubernetes, observabilidade e CI/CD
 ```
 
-> **Você está na Branch 2.** Tudo da Branch 1 continua funcionando; a novidade é a arquitetura orientada a eventos
-> (seção 9). Docker, Kubernetes, observabilidade e CI/CD **não** existem aqui de propósito (Branch 3).
+> **Você está na Branch TP4.** Tudo da Branch TP3 continua funcionando; a novidade é a arquitetura orientada a eventos
+> (seção 9). Docker, Kubernetes, observabilidade e CI/CD **não** existem aqui de propósito (Branch TP5).
 
 ---
 
@@ -88,7 +88,7 @@ enums. `Regiao` (Norte, Nordeste, Centro-Oeste, Sudeste, Sul) é calculada a par
 
 ### Fora do escopo desta etapa
 
-RabbitMQ e eventos (Branch 2); Docker, Kubernetes, observabilidade, CI/CD e testes E2E (Branch 3); autenticação;
+RabbitMQ e eventos (Branch TP4); Docker, Kubernetes, observabilidade, CI/CD e testes E2E (Branch TP5); autenticação;
 regras eleitorais reais.
 
 ---
@@ -180,7 +180,7 @@ npm run dev        # http://localhost:5173  (encaminha /api para localhost:8080)
 ```bash
 cd backend  && mvn test        # JUnit 5 + Mockito + Spring Boot Test (H2 em memória)
 cd frontend && npm test        # Vitest + Testing Library
-# (Branch 2: também result-service e audit-service, ver seção 9.10)
+# (Branch TP4: também result-service e audit-service, ver seção 9.10)
 ```
 
 **Backend**
@@ -208,14 +208,14 @@ corrigir escolha, sem eleição ativa), resultados (percentuais, filtros, erro),
 
 ---
 
-## 8. Branch 1 em uma frase
+## 8. Branch TP3 em uma frase
 
 Frontend React → API REST (Spring Boot) → PostgreSQL. Tudo síncrono, em um único serviço. As seções 1 a 7
-descrevem essa base, que a Branch 2 **não recria**: apenas evolui.
+descrevem essa base, que a Branch TP4 **não recria**: apenas evolui.
 
 ---
 
-## 9. Branch 2 — arquitetura orientada a eventos (RabbitMQ)
+## 9. Branch TP4 — arquitetura orientada a eventos (RabbitMQ)
 
 ### 9.1 O que mudou
 
@@ -339,7 +339,7 @@ voto não espera a atualização do resultado nem da auditoria); vários consumi
 **Desvantagens:** mais complexidade (broker, filas, contratos, três serviços e três bancos); depuração mais difícil
 (o caminho de um voto atravessa processos); **consistência eventual** (o resultado no `result-service` pode estar
 alguns instantes atrás; por isso a tela permite comparar com a consulta direta); necessidade de tratar mensagens
-duplicadas (idempotência); necessidade de observabilidade (Branch 3); maior custo operacional.
+duplicadas (idempotência); necessidade de observabilidade (Branch TP5); maior custo operacional.
 
 ### 9.8 Limitações conhecidas (assumidas de propósito)
 
@@ -349,17 +349,17 @@ duplicadas (idempotência); necessidade de observabilidade (Branch 3); maior cus
 * Alterar apenas o **nome** de uma eleição (sem mudar o status) não gera evento; o nome só se atualiza na
   projeção quando há um evento de candidato/eleição posterior.
 * Erros de formato passam pelo retry antes da DLQ.
-* Nenhum dado foi criado por script de migração (`ddl-auto=update`), como na Branch 1.
+* Nenhum dado foi criado por script de migração (`ddl-auto=update`), como na Branch TP3.
 
-### 9.9 Como executar a Branch 2
+### 9.9 Como executar a Branch TP4
 
 Pré-requisitos: JDK 21, Maven, Node 20+, **PostgreSQL** e **RabbitMQ**.
 
 ```bash
-# 1) RabbitMQ (uma opção, sem arquivos no repositório; a orquestração completa chega na Branch 3)
+# 1) RabbitMQ (uma opção, sem arquivos no repositório; a orquestração completa chega na Branch TP5)
 docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3.13-management
 
-# 2) Bancos (no mesmo PostgreSQL usado na Branch 1)
+# 2) Bancos (no mesmo PostgreSQL usado na Branch TP3)
 createdb -U postgres resultados
 createdb -U postgres auditoria      # "votacao" já existe
 
@@ -377,7 +377,7 @@ Configuração por variáveis de ambiente (valores padrão apenas para desenvolv
 `RABBITMQ_HOST`, `RABBITMQ_PORT`, `RABBITMQ_USERNAME`, `RABBITMQ_PASSWORD`.
 
 Sem PostgreSQL: adicione `-Dspring-boot.run.profiles=h2` em cada serviço. Sem RabbitMQ: use
-`-Dspring-boot.run.arguments=--app.messaging.enabled=false` (o `voting-service` funciona como na Branch 1; nada é publicado).
+`-Dspring-boot.run.arguments=--app.messaging.enabled=false` (o `voting-service` funciona como na Branch TP3; nada é publicado).
 
 **Endpoints novos**
 
@@ -387,7 +387,7 @@ Sem PostgreSQL: adicione `-Dspring-boot.run.profiles=h2` em cada serviço. Sem R
 | `result-service` | `GET /result-api/v1/resultados` (`?eleicaoId=&cargo=&estado=`) · `/resultados/candidatos/{id}` · `/resultados/cargos/{cargo}` · `/resultados/regioes/{uf}` |
 | `audit-service` | `GET /audit-api/v1/eventos` (`?tipo=&limite=`) · `GET /audit-api/v1/eventos/resumo` |
 
-### 9.10 Testes da Branch 2
+### 9.10 Testes da Branch TP4
 
 ```bash
 cd backend        && mvn test
@@ -397,7 +397,7 @@ cd frontend       && npm test
 ```
 
 Os testes **não precisam de RabbitMQ** (mensageria desligada e autoconfiguração excluída); testes com broker real
-(Testcontainers) ficam para a Branch 3.
+(Testcontainers) ficam para a Branch TP5.
 
 | Módulo | Novos testes |
 |---|---|
@@ -422,6 +422,6 @@ Os testes **não precisam de RabbitMQ** (mensageria desligada e autoconfiguraç�
 
 ## 10. Próxima etapa
 
-* **Branch 3:** Dockerfiles e Docker Compose (todos os serviços, PostgreSQL, RabbitMQ), manifests Kubernetes,
+* **Branch TP5:** Dockerfiles e Docker Compose (todos os serviços, PostgreSQL, RabbitMQ), manifests Kubernetes,
   Actuator/Prometheus/Grafana, logs padronizados com `traceId`/`eventId`, tracing, GitHub Actions,
   Testcontainers e testes E2E.
