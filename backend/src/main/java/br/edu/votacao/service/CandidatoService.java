@@ -9,6 +9,7 @@ import br.edu.votacao.dto.CandidatoResponse;
 import br.edu.votacao.exception.ConflictException;
 import br.edu.votacao.exception.NotFoundException;
 import br.edu.votacao.mapper.CandidatoMapper;
+import br.edu.votacao.messaging.DomainEventPublisher;
 import br.edu.votacao.repository.CandidatoRepository;
 import br.edu.votacao.repository.EleicaoRepository;
 import br.edu.votacao.repository.PartidoRepository;
@@ -23,13 +24,16 @@ public class CandidatoService {
     private final PartidoRepository partidoRepository;
     private final EleicaoRepository eleicaoRepository;
     private final VotoRepository votoRepository;
+    private final DomainEventPublisher eventos;
 
     public CandidatoService(CandidatoRepository candidatoRepository, PartidoRepository partidoRepository,
-                            EleicaoRepository eleicaoRepository, VotoRepository votoRepository) {
+                            EleicaoRepository eleicaoRepository, VotoRepository votoRepository,
+                            DomainEventPublisher eventos) {
         this.candidatoRepository = candidatoRepository;
         this.partidoRepository = partidoRepository;
         this.eleicaoRepository = eleicaoRepository;
         this.votoRepository = votoRepository;
+        this.eventos = eventos;
     }
 
     @Transactional(readOnly = true)
@@ -56,7 +60,9 @@ public class CandidatoService {
         Candidato candidato = new Candidato();
         CandidatoMapper.copiar(request, candidato, buscarPartido(request.partidoId()),
                 buscarEleicao(request.eleicaoId()));
-        return CandidatoMapper.toResponse(candidatoRepository.save(candidato));
+        Candidato salvo = candidatoRepository.save(candidato);
+        eventos.candidatoCadastrado(salvo);
+        return CandidatoMapper.toResponse(salvo);
     }
 
     @Transactional
@@ -70,7 +76,9 @@ public class CandidatoService {
         }
         CandidatoMapper.copiar(request, candidato, buscarPartido(request.partidoId()),
                 buscarEleicao(request.eleicaoId()));
-        return CandidatoMapper.toResponse(candidatoRepository.save(candidato));
+        Candidato salvo = candidatoRepository.save(candidato);
+        eventos.candidatoAtualizado(salvo);
+        return CandidatoMapper.toResponse(salvo);
     }
 
     @Transactional
@@ -79,6 +87,7 @@ public class CandidatoService {
         if (votoRepository.existsByCandidatoId(id)) {
             throw new ConflictException("Não é possível remover um candidato que já recebeu votos.");
         }
+        eventos.candidatoRemovido(candidato);
         candidatoRepository.delete(candidato);
     }
 

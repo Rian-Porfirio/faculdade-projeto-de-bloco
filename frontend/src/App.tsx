@@ -4,6 +4,7 @@ import Candidatos from './pages/Candidatos'
 import Eleitores from './pages/Eleitores'
 import Votacao from './pages/Votacao'
 import Resultado from './pages/Resultado'
+import Auditoria from './pages/Auditoria'
 
 const LINKS = [
   { to: '/', label: 'Dashboard', end: true },
@@ -11,6 +12,7 @@ const LINKS = [
   { to: '/resultado', label: 'Resultado' },
   { to: '/candidatos', label: 'Candidatos' },
   { to: '/eleitores', label: 'Eleitores' },
+  { to: '/auditoria', label: 'Auditoria' },
 ]
 
 export default function App() {
@@ -35,6 +37,7 @@ export default function App() {
           <Route path="/resultado" element={<Resultado />} />
           <Route path="/candidatos" element={<Candidatos />} />
           <Route path="/eleitores" element={<Eleitores />} />
+          <Route path="/auditoria" element={<Auditoria />} />
           <Route path="*" element={<p>Página não encontrada.</p>} />
         </Routes>
       </main>

@@ -22,6 +22,12 @@ describe('request', () => {
     expect(fetchMock).toHaveBeenCalledWith('/api/v1/eleitores', expect.any(Object))
   })
 
+  it('permite informar outra base de URL (serviços da Branch 2)', async () => {
+    const fetchMock = mockFetch({ jsonBody: {} })
+    await request('/resultados', {}, '/result-api/v1')
+    expect(fetchMock).toHaveBeenCalledWith('/result-api/v1/resultados', expect.any(Object))
+  })
+
   it('retorna undefined em respostas 204', async () => {
     mockFetch({ status: 204 })
     await expect(request<void>('/eleitores/1', { method: 'DELETE' })).resolves.toBeUndefined()

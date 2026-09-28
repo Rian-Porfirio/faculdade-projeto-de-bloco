@@ -4,6 +4,9 @@ import type {
   CandidatoInput,
   Cargo,
   Eleicao,
+  EventoAuditoria,
+  FonteResultado,
+  ResumoTipo,
   Eleitor,
   EleitorInput,
   LocalVotacao,
@@ -56,7 +59,17 @@ export const api = {
     listar: (eleicaoId?: number) => request<Voto[]>(`/votos${query({ eleicaoId })}`),
   },
   resultados: {
-    apurar: (filtros: { eleicaoId?: number; cargo?: Cargo | ''; estado?: string } = {}) =>
-      request<Resultado>(`/resultados${query(filtros)}`),
+    apurar: (
+      filtros: { eleicaoId?: number; cargo?: Cargo | ''; estado?: string } = {},
+      fonte: FonteResultado = 'voting',
+    ) =>
+      fonte === 'eventos'
+        ? request<Resultado>(`/resultados${query(filtros)}`, {}, '/result-api/v1')
+        : request<Resultado>(`/resultados${query(filtros)}`),
+  },
+  auditoria: {
+    listar: (tipo?: string, limite = 50) =>
+      request<EventoAuditoria[]>(`/eventos${query({ tipo, limite })}`, {}, '/audit-api/v1'),
+    resumo: () => request<ResumoTipo[]>('/eventos/resumo', {}, '/audit-api/v1'),
   },
 }

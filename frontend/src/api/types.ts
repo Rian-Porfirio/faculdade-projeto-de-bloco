@@ -109,4 +109,24 @@ export interface Resultado {
   estado: string | null
   totalVotos: number
   candidatos: ResultadoCandidato[]
+  /** Preenchido apenas pelo result-service (Branch 2). */
+  fonte?: string
 }
+
+export interface EventoAuditoria {
+  id: number
+  eventId: string
+  eventType: string
+  routingKey: string | null
+  occurredAt: string | null
+  recebidoEm: string
+  payload: string | null
+}
+
+export interface ResumoTipo {
+  tipo: string
+  total: number
+}
+
+/** De onde vêm os resultados: consulta síncrona ao voting-service ou projeção alimentada por eventos. */
+export type FonteResultado = 'voting' | 'eventos'

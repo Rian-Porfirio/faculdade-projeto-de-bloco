@@ -13,10 +13,10 @@ export class ApiError extends Error {
 
 const BASE_URL: string = import.meta.env.VITE_API_URL ?? '/api/v1'
 
-export async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+export async function request<T>(path: string, init: RequestInit = {}, base: string = BASE_URL): Promise<T> {
   let response: Response
   try {
-    response = await fetch(`${BASE_URL}${path}`, {
+    response = await fetch(`${base}${path}`, {
       ...init,
       headers: { 'Content-Type': 'application/json', ...init.headers },
     })

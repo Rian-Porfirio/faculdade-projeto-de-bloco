@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { api } from '../api'
 import { CARGOS, UFS, cargoLabel, formatPercent } from '../api/format'
-import type { Cargo } from '../api/types'
+import type { Cargo, FonteResultado } from '../api/types'
 import { ErrorNotice, Loading } from '../components/Feedback'
 import { useLoad } from '../hooks'
 
@@ -10,10 +10,12 @@ export default function Resultado() {
   const [eleicaoId, setEleicaoId] = useState('')
   const [cargo, setCargo] = useState<Cargo | ''>('')
   const [estado, setEstado] = useState('')
+  const [fonte, setFonte] = useState<FonteResultado>('eventos')
 
   const resultado = useLoad(
-    () => api.resultados.apurar({ eleicaoId: eleicaoId ? Number(eleicaoId) : undefined, cargo, estado }),
-    [eleicaoId, cargo, estado],
+    () =>
+      api.resultados.apurar({ eleicaoId: eleicaoId ? Number(eleicaoId) : undefined, cargo, estado }, fonte),
+    [eleicaoId, cargo, estado, fonte],
   )
 
   const dados = resultado.data
@@ -23,6 +25,13 @@ export default function Resultado() {
       <h1>Resultado</h1>
 
       <form className="filters" onSubmit={(e) => e.preventDefault()} aria-label="Filtros">
+        <div className="field">
+          <label htmlFor="f-fonte">Fonte dos dados</label>
+          <select id="f-fonte" value={fonte} onChange={(e) => setFonte(e.target.value as FonteResultado)}>
+            <option value="eventos">Result Service (por eventos)</option>
+            <option value="voting">Voting Service (consulta direta)</option>
+          </select>
+        </div>
         <div className="field">
           <label htmlFor="f-eleicao">Eleição</label>
           <select id="f-eleicao" value={eleicaoId} onChange={(e) => setEleicaoId(e.target.value)}>
@@ -58,6 +67,15 @@ export default function Resultado() {
         </div>
       </form>
 
+      {fonte === 'eventos' && (
+        <p className="muted">
+          Este resultado vem de uma projeção atualizada por eventos e pode levar instantes para refletir o
+          último voto (consistência eventual).{' '}
+          <button type="button" className="btn btn-small" onClick={resultado.reload}>
+            Atualizar
+          </button>
+        </p>
+      )}
       <ErrorNotice message={resultado.error} />
       {resultado.loading && !dados && <Loading what="resultado" />}
 

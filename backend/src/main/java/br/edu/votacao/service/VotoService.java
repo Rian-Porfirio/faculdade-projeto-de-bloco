@@ -11,6 +11,7 @@ import br.edu.votacao.exception.BusinessRuleException;
 import br.edu.votacao.exception.ConflictException;
 import br.edu.votacao.exception.NotFoundException;
 import br.edu.votacao.mapper.VotoMapper;
+import br.edu.votacao.messaging.DomainEventPublisher;
 import br.edu.votacao.repository.CandidatoRepository;
 import br.edu.votacao.repository.EleicaoRepository;
 import br.edu.votacao.repository.EleitorRepository;
@@ -32,16 +33,19 @@ public class VotoService {
     private final EleicaoRepository eleicaoRepository;
     private final LocalVotacaoRepository localRepository;
     private final Clock clock;
+    private final DomainEventPublisher eventos;
 
     public VotoService(VotoRepository votoRepository, EleitorRepository eleitorRepository,
                        CandidatoRepository candidatoRepository, EleicaoRepository eleicaoRepository,
-                       LocalVotacaoRepository localRepository, Clock clock) {
+                       LocalVotacaoRepository localRepository, Clock clock,
+                       DomainEventPublisher eventos) {
         this.votoRepository = votoRepository;
         this.eleitorRepository = eleitorRepository;
         this.candidatoRepository = candidatoRepository;
         this.eleicaoRepository = eleicaoRepository;
         this.localRepository = localRepository;
         this.clock = clock;
+        this.eventos = eventos;
     }
 
     @Transactional
@@ -70,12 +74,16 @@ public class VotoService {
         voto.setLocalVotacao(resolverLocal(request.localVotacaoId(), eleitor));
         voto.setDataHora(Instant.now(clock));
 
+        Voto salvo;
         try {
             // saveAndFlush: a constraint única do banco cobre votos concorrentes do mesmo eleitor.
-            return VotoMapper.toResponse(votoRepository.saveAndFlush(voto));
+            salvo = votoRepository.saveAndFlush(voto);
         } catch (DataIntegrityViolationException ex) {
             throw new ConflictException("O eleitor já votou nesta eleição.");
         }
+        // Branch 2: o evento só é enviado ao RabbitMQ após o commit desta transação.
+        eventos.votoRegistrado(salvo);
+        return VotoMapper.toResponse(salvo);
     }
 
     @Transactional(readOnly = true)

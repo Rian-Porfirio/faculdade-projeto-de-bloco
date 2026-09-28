@@ -108,3 +108,8 @@ table.results th { font-size: 0.85rem; color: var(--muted); font-weight: 600; ba
 .bar-fill { height: 100%; background: var(--green); border-radius: 2px; }
 .row-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
 @media (max-width: 760px) { table.results { display: block; overflow-x: auto; } }
+
+.stat-button { font: inherit; text-align: left; cursor: pointer; color: var(--ink); }
+.stat-button:hover { border-color: var(--green); }
+.stat-button[aria-pressed='true'] { border: 2px solid var(--green); background: var(--green-soft); }
+.stat-button .stat-value { font-size: 1.75rem; }

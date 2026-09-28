@@ -5,6 +5,7 @@ import br.edu.votacao.repository.*;
 import java.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
  * Partidos e candidatos são inventados; não representam pessoas ou legendas reais.
  */
 @Component
+@Order(1)
 public class DataSeeder implements CommandLineRunner {
 
     private final boolean enabled;

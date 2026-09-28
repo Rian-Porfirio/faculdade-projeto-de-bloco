@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import br.edu.votacao.domain.*;
@@ -14,6 +15,7 @@ import br.edu.votacao.dto.VotoResponse;
 import br.edu.votacao.exception.BusinessRuleException;
 import br.edu.votacao.exception.ConflictException;
 import br.edu.votacao.exception.NotFoundException;
+import br.edu.votacao.messaging.DomainEventPublisher;
 import br.edu.votacao.repository.*;
 import java.time.Clock;
 import java.time.Instant;
@@ -37,6 +39,7 @@ class VotoServiceTest {
     @Mock CandidatoRepository candidatoRepository;
     @Mock EleicaoRepository eleicaoRepository;
     @Mock LocalVotacaoRepository localRepository;
+    @Mock DomainEventPublisher eventos;
 
     VotoService service;
 
@@ -48,7 +51,7 @@ class VotoServiceTest {
     @BeforeEach
     void setUp() {
         service = new VotoService(votoRepository, eleitorRepository, candidatoRepository, eleicaoRepository,
-                localRepository, Clock.fixed(AGORA, ZoneOffset.UTC));
+                localRepository, Clock.fixed(AGORA, ZoneOffset.UTC), eventos);
     }
 
     private VotoRequest request() {
@@ -75,6 +78,7 @@ class VotoServiceTest {
         assertThat(resposta.eleicaoId()).isEqualTo(1L);
         assertThat(resposta.localVotacaoId()).isEqualTo(7L);
         assertThat(resposta.dataHora()).isEqualTo(AGORA);
+        verify(eventos).votoRegistrado(any(Voto.class));
     }
 
     @Test
@@ -86,6 +90,7 @@ class VotoServiceTest {
 
         assertThatThrownBy(() -> service.registrar(request())).isInstanceOf(ConflictException.class);
         verify(votoRepository, never()).saveAndFlush(any());
+        verifyNoInteractions(eventos);
     }
 
     @Test
@@ -97,6 +102,7 @@ class VotoServiceTest {
         when(votoRepository.saveAndFlush(any(Voto.class))).thenThrow(new DataIntegrityViolationException("uk"));
 
         assertThatThrownBy(() -> service.registrar(request())).isInstanceOf(ConflictException.class);
+        verifyNoInteractions(eventos);
     }
 
     @Test
@@ -125,6 +131,7 @@ class VotoServiceTest {
         assertThatThrownBy(() -> service.registrar(request()))
                 .isInstanceOf(BusinessRuleException.class)
                 .hasMessageContaining("não está ativa");
+        verifyNoInteractions(eventos);
     }
 
     @Test

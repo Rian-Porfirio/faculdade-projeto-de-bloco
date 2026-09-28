@@ -37,8 +37,26 @@ describe('Resultado', () => {
     await user.selectOptions(screen.getByLabelText('Estado do eleitor'), 'SP')
 
     await waitFor(() =>
-      expect(mocked.resultados.apurar).toHaveBeenLastCalledWith({ eleicaoId: undefined, cargo: 'PRESIDENTE', estado: 'SP' }),
+      expect(mocked.resultados.apurar).toHaveBeenLastCalledWith(
+        { eleicaoId: undefined, cargo: 'PRESIDENTE', estado: 'SP' },
+        'eventos',
+      ),
     )
+  })
+
+  it('consulta a projeção por eventos por padrão e permite trocar para o voting-service', async () => {
+    const user = userEvent.setup()
+    render(<Resultado />)
+    await screen.findByText(/voto\(s\) apurados/)
+    expect(mocked.resultados.apurar).toHaveBeenLastCalledWith({ eleicaoId: undefined, cargo: '', estado: '' }, 'eventos')
+    expect(screen.getByText(/consistência eventual/)).toBeInTheDocument()
+
+    await user.selectOptions(screen.getByLabelText('Fonte dos dados'), 'voting')
+
+    await waitFor(() =>
+      expect(mocked.resultados.apurar).toHaveBeenLastCalledWith({ eleicaoId: undefined, cargo: '', estado: '' }, 'voting'),
+    )
+    expect(screen.queryByText(/consistência eventual/)).not.toBeInTheDocument()
   })
 
   it('exibe erro da API', async () => {
