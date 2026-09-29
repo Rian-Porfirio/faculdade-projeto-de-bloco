@@ -1,0 +1,14 @@
+# Configuracao NAO sensivel, compartilhada pelos servicos. Segredos ficam em secret.yaml.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: votacao-config
+  namespace: votacao
+data:
+  DATABASE_URL: "jdbc:postgresql://postgres:5432/votacao"
+  RESULT_DATABASE_URL: "jdbc:postgresql://postgres:5432/resultados"
+  AUDIT_DATABASE_URL: "jdbc:postgresql://postgres:5432/auditoria"
+  RABBITMQ_HOST: "rabbitmq"
+  RABBITMQ_PORT: "5672"
+  OTLP_TRACING_ENDPOINT: "http://jaeger:4318/v1/traces"
+  APP_CORS_ALLOWED_ORIGINS: "http://localhost"

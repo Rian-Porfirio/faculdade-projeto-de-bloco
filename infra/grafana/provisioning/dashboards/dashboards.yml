@@ -1,0 +1,7 @@
+apiVersion: 1
+providers:
+  - name: votacao
+    folder: Sistema de Votação
+    type: file
+    options:
+      path: /etc/grafana/dashboards

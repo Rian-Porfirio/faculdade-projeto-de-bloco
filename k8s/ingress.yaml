@@ -1,0 +1,21 @@
+# O frontend (nginx) ja faz proxy reverso para voting-service/result-service/audit-service usando o nome
+# do Service do Kubernetes (mesma logica do docker-compose.yml). Por isso o Ingress so precisa apontar
+# tudo para o Service "frontend": nao ha necessidade de reescrever caminhos aqui.
+#
+# Requer um Ingress Controller no cluster (ex.: `minikube addons enable ingress`, ou o do kind).
+# Acesso local: adicionar "127.0.0.1 votacao.local" no /etc/hosts (ou usar `minikube tunnel`).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: votacao-ingress
+  namespace: votacao
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: votacao.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service: { name: frontend, port: { number: 80 } }

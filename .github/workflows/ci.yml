@@ -1,0 +1,81 @@
+# CI/CD do Sistema de Votação Evolutivo.
+#
+# Push/PR em qualquer branch: build + testes dos 3 backends, build + testes do frontend, validação dos
+# manifests Kubernetes e um smoke test E2E com o sistema completo (docker compose).
+# Só em push para main/TP5: build das imagens Docker e publicação no GitHub Container Registry (GHCR).
+
+name: CI - Validação e Testes
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  workflow_dispatch: {}
+
+jobs:
+  backend-tests:
+    name: Backend · ${{ matrix.servico }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        servico: [backend, result-service, audit-service]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: temurin
+          cache: maven
+          cache-dependency-path: ${{ matrix.servico }}/pom.xml
+
+      - name: Executar testes unitários e de integração (mvn verify)
+        working-directory: ${{ matrix.servico }}
+        run: mvn -B verify
+
+  frontend-tests:
+    name: Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Instalar dependências
+        working-directory: frontend
+        run: npm ci
+
+      - name: Checagem de tipos (TypeScript)
+        working-directory: frontend
+        run: npx tsc -b
+
+      - name: Executar testes do frontend
+        working-directory: frontend
+        run: npm test
+
+      - name: Validar build de produção
+        working-directory: frontend
+        run: npm run build
+
+  validate-k8s:
+    name: Validar Manifests Kubernetes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar kubeconform
+        run: |
+          KUBECONFORM_VERSION="v0.6.7"
+          curl -sSL "https://github.com/yannh/kubeconform/releases/download/${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz" | tar xz
+          sudo mv kubeconform /usr/local/bin/
+
+      - name: Validar sintaxe dos arquivos K8s
+        run: kubeconform -strict -summary k8s/

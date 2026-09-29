@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: audit-service
+  namespace: votacao
+  labels: { app: audit-service }
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: audit-service }
+  template:
+    metadata:
+      labels: { app: audit-service }
+    spec:
+      containers:
+        - name: audit-service
+          # Imagem construida localmente (ver README, secao 15/16) e carregada no cluster (kind/minikube)
+          # ou publicada pelo pipeline de CI/CD (secao 20) em um registry (ex.: ghcr.io/<usuario>/audit-service).
+          image: votacao/audit-service:latest
+          imagePullPolicy: IfNotPresent
+          ports: [{ containerPort: 8082 }]
+          env:
+            - name: AUDIT_DATABASE_URL
+              valueFrom: { configMapKeyRef: { name: votacao-config, key: AUDIT_DATABASE_URL } }
+            - name: DATABASE_USERNAME
+              valueFrom: { secretKeyRef: { name: votacao-secrets, key: DATABASE_USERNAME } }
+            - name: DATABASE_PASSWORD
+              valueFrom: { secretKeyRef: { name: votacao-secrets, key: DATABASE_PASSWORD } }
+            - name: RABBITMQ_HOST
+              valueFrom: { configMapKeyRef: { name: votacao-config, key: RABBITMQ_HOST } }
+            - name: RABBITMQ_USERNAME
+              valueFrom: { secretKeyRef: { name: votacao-secrets, key: RABBITMQ_USERNAME } }
+            - name: RABBITMQ_PASSWORD
+              valueFrom: { secretKeyRef: { name: votacao-secrets, key: RABBITMQ_PASSWORD } }
+            - name: OTLP_TRACING_ENDPOINT
+              valueFrom: { configMapKeyRef: { name: votacao-config, key: OTLP_TRACING_ENDPOINT } }
+            - name: APP_CORS_ALLOWED_ORIGINS
+              valueFrom: { configMapKeyRef: { name: votacao-config, key: APP_CORS_ALLOWED_ORIGINS } }
+          resources:
+            requests: { cpu: "150m", memory: "384Mi" }
+            limits: { cpu: "500m", memory: "512Mi" }
+          readinessProbe:
+            httpGet: { path: /actuator/health/readiness, port: 8082 }
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /actuator/health/liveness, port: 8082 }
+            initialDelaySeconds: 30
+            periodSeconds: 15
